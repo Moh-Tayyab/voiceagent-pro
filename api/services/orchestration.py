@@ -151,7 +151,7 @@ class VoiceAgentOrchestrator:
         language: str
     ) -> Dict[str, Any]:
         """Run triage agent."""
-        from agents.triage_agent import triage_message
+        from voice_agents.triage_agent import triage_message
 
         return await triage_message(message, session_id, customer_id)
 
@@ -166,24 +166,24 @@ class VoiceAgentOrchestrator:
     ) -> Dict[str, Any]:
         """Run specialist agent based on type."""
         if agent_type == "faq_agent":
-            from agents.faq_agent import process_faq_query
+            from voice_agents.faq_agent import process_faq_query
             return await process_faq_query(message, session_id, customer_id, language)
 
         elif agent_type == "billing_agent":
-            from agents.billing_agent import process_billing_query
+            from voice_agents.billing_agent import process_billing_query
             return await process_billing_query(message, session_id, customer_id, language)
 
         elif agent_type == "booking_agent":
-            from agents.booking_agent import process_booking_request
+            from voice_agents.booking_agent import process_booking_request
             return await process_booking_request(message, session_id, customer_id, language)
 
         elif agent_type == "escalation_agent":
-            from agents.escalation_agent import process_escalation
+            from voice_agents.escalation_agent import process_escalation
             return await process_escalation(message, session_id, customer_id, language=language)
 
         else:
             # Default to FAQ
-            from agents.faq_agent import process_faq_query
+            from voice_agents.faq_agent import process_faq_query
             return await process_faq_query(message, session_id, customer_id, language)
 
     async def _handle_handoff(
@@ -212,7 +212,7 @@ class VoiceAgentOrchestrator:
         reason: str
     ) -> Dict[str, Any]:
         """Run escalation agent."""
-        from agents.escalation_agent import process_escalation
+        from voice_agents.escalation_agent import process_escalation
 
         return await process_escalation(
             message, session_id, customer_id, language=language,

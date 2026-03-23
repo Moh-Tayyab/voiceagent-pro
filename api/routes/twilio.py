@@ -50,7 +50,7 @@ def create_twilll_response(say: str = "", gather: Optional[dict] = None, connect
     if gather:
         action = gather.get("action", "/voice/process")
         num_digits = gather.get("numDigits", 0)
-        twilml += f'<Gather action="{action}" numDigits="{num_digits}">'
+        twiml += f'<Gather action="{action}" numDigits="{num_digits}">'
 
     if connect:
         stream_url = connect.get("url", "wss://api.voiceagent.pro/voice/stream")
