@@ -1,0 +1,158 @@
+version: '3.8'
+
+services:
+  # FastAPI Application
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/voiceagent
+      - REDIS_URL=redis://redis:6379
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - TWILIO_ACCOUNT_SID=${TWILIO_ACCOUNT_SID}
+      - TWILIO_AUTH_TOKEN=${TWILIO_AUTH_TOKEN}
+      - DEEPGRAM_API_KEY=${DEEPGRAM_API_KEY}
+      - ELEVENLABS_API_KEY=${ELEVENLABS_API_KEY}
+    depends_on:
+      - db
+      - redis
+      - knowledge-mcp
+      - crm-mcp
+      - ticketing-mcp
+      - calendar-mcp
+      - analytics-mcp
+      - escalation-mcp
+    networks:
+      - voiceagent-network
+
+  # Knowledge MCP Server - FAQs, product docs, policy lookups
+  knowledge-mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile.mcp
+    ports:
+      - "8001:8001"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/voiceagent
+      - MCP_SERVER_PORT=8001
+    volumes:
+      - ./servers:/app/servers
+    command: python servers/knowledge_mcp.py
+    networks:
+      - voiceagent-network
+
+  # CRM MCP Server - Customer lookup, history, account info
+  crm-mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile.mcp
+    ports:
+      - "8002:8002"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/voiceagent
+      - CRM_API_KEY=${CRM_API_KEY}
+      - MCP_SERVER_PORT=8002
+    volumes:
+      - ./servers:/app/servers
+    command: python servers/crm_mcp.py
+    networks:
+      - voiceagent-network
+
+  # Ticketing MCP Server - Create, update, escalate support tickets
+  ticketing-mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile.mcp
+    ports:
+      - "8003:8003"
+    environment:
+      - ZENDESK_API_KEY=${ZENDESK_API_KEY}
+      - ZENDESK_SUBDOMAIN=${ZENDESK_SUBDOMAIN}
+      - MCP_SERVER_PORT=8003
+    volumes:
+      - ./servers:/app/servers
+    command: python servers/ticketing_mcp.py
+    networks:
+      - voiceagent-network
+
+  # Calendar MCP Server - Appointment booking, availability checks
+  calendar-mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile.mcp
+    ports:
+      - "8004:8004"
+    environment:
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - MCP_SERVER_PORT=8004
+    volumes:
+      - ./servers:/app/servers
+    command: python servers/calendar_mcp.py
+    networks:
+      - voiceagent-network
+
+  # Analytics MCP Server - Log call outcomes, generate reports
+  analytics-mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile.mcp
+    ports:
+      - "8005:8005"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/voiceagent
+      - MCP_SERVER_PORT=8005
+    volumes:
+      - ./servers:/app/servers
+    command: python servers/analytics_mcp.py
+    networks:
+      - voiceagent-network
+
+  # Escalation MCP Server - Route to human, send alerts
+  escalation-mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile.mcp
+    ports:
+      - "8006:8006"
+    environment:
+      - PAGERDUTY_API_KEY=${PAGERDUTY_API_KEY}
+      - TWILIO_ACCOUNT_SID=${TWILIO_ACCOUNT_SID}
+      - TWILIO_AUTH_TOKEN=${TWILIO_AUTH_TOKEN}
+      - MCP_SERVER_PORT=8006
+    volumes:
+      - ./servers:/app/servers
+    command: python servers/escalation_mcp.py
+    networks:
+      - voiceagent-network
+
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=voiceagent
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - voiceagent-network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis_data:/data
+    networks:
+      - voiceagent-network
+
+networks:
+  voiceagent-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:

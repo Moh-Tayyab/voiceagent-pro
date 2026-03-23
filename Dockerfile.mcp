@@ -1,0 +1,17 @@
+# MCP Server Dockerfile
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy servers directory
+COPY servers/ ./servers/
+
+# Expose default port (overridden by environment)
+EXPOSE 8001
+
+# Default command - override in docker-compose
+CMD ["python", "servers/knowledge_mcp.py"]

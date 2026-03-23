@@ -1,0 +1,28 @@
+{
+  "mcpServers": {
+    "knowledge": {
+      "url": "http://localhost:8001/sse",
+      "permissions": ["read"]
+    },
+    "crm": {
+      "url": "http://localhost:8002/sse",
+      "permissions": ["read"]
+    },
+    "ticketing": {
+      "url": "http://localhost:8003/sse",
+      "permissions": ["write"]
+    },
+    "calendar": {
+      "url": "http://localhost:8004/sse",
+      "permissions": ["read", "write"]
+    },
+    "analytics": {
+      "url": "http://localhost:8005/sse",
+      "permissions": ["write"]
+    },
+    "escalation": {
+      "url": "http://localhost:8006/sse",
+      "permissions": ["write"]
+    }
+  }
+}
